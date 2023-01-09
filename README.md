@@ -19,6 +19,7 @@ Die neue virtuelle Umgebung kann wie folgt aus dem Terminal gestartet werden
 ```
 
 Eventuell müssen die Ausführungsrichtlien mit `Set-ExecutionPolicy RemoteSigned` in `powershell.exe` angepasst werden.
+Dazu kann die powershell mithilfe von `powershell Start-process powershell -verb runas` geöffnet werden.
 
 Anschließend müssen alle Abhängigkeiten (dependencies) aus der  `requirements.txt` Datei installiert werden.
 

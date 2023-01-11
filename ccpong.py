@@ -79,11 +79,19 @@ class Ball(pygame.sprite.Sprite):
         self.rect.x += self.speed[0]
         self.rect.y += self.speed[1]
 
+    def remove_from_match(self):
+        self.rect.x = 1
+        self.rect.y = 1
+        self.speed *= np.array([0])
+
 
 class Matchfield:
     def __init__(self, main_window, ball_count=1, hintergrundfarbe=(255, 255, 0)):
         self.main_window = main_window
         self.hintergrundfarbe = hintergrundfarbe
+
+        self.max_active_balls_on_field = ball_count
+        self.current_active_balls_on_field = ball_count
 
         self.balls = [Ball() for _ in range(0, ball_count)]
 
@@ -110,12 +118,20 @@ class Matchfield:
         paddle_collision = paddle1_collision or paddle2_collision
 
         if right_wall_collision:
-            self.player_left.score += 1
-            self._reset_game()
+            self.current_active_balls_on_field -= 1
+            ball.remove_from_match()
+
+            if self.current_active_balls_on_field == 0:
+                self.player_left.score += 1
+                self._reset_game()
 
         elif left_wall_collision:
-            self.player_right.score += 1
-            self._reset_game()
+            self.current_active_balls_on_field -= 1
+            ball.remove_from_match()
+
+            if self.current_active_balls_on_field == 0:
+                self.player_right.score += 1
+                self._reset_game()
 
         elif top_bot_wall_collision:
             ball.speed *= np.array([1, -1])
@@ -151,6 +167,7 @@ class Matchfield:
     def _reset_game(self):
         self._position_players()
         self._position_ball()
+        self.current_active_balls_on_field = self.max_active_balls_on_field
 
     def _position_ball(self):
         for ball in self.balls:

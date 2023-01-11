@@ -1,44 +1,53 @@
+#!/usr/bin/python
+
+
 import pygame
-import numpy as np
 from pygame.locals import *
 
-# Konstanten
-WINDOW_HEIGHT = 1024
-WINDOW_WIDTH = 768
+import numpy as np
+
+
+WINDOW_WIDTH = 1024  # width of the game window
+WINDOW_HEIGHT = 768  # height of the game window
 
 
 class Application:
-    def __init__(self, height, width):
-        self.window_size = (height, width)
-        self.main_window = pygame.display.set_mode(size=self.window_size)
+    def __init__(self, window_width, window_height, caption="Codecentric: Pong"):
+        window_size = (window_width, window_height)
+        self.main_window = pygame.display.set_mode(window_size)
 
+        pygame.display.set_caption(caption)
         self.clock = pygame.time.Clock()
 
-        self.isRunning = True
+        self.isRunning = False
 
 
 class Ball(pygame.sprite.Sprite):
-    x_default_speed, y_default_speed = (5, 1)
-
-    def __init__(self, hintergrundfarbe=(0, 0, 0)):
-        super().pygame.sprite.Sprite.__init__()
+    def __init__(self, hintergrundfarbe=(255, 0, 0)):
+        pygame.sprite.Sprite.__init__(self)
 
         self.image = pygame.Surface([18, 18])
         self.rect = self.image.get_rect()
-
         self.ball_color = hintergrundfarbe
-        print(self.rect.centerx)
-        ball_radius = 7
-        ball_center_coords = (self.rect.centerx, self.rect.centery)
 
+        self.image.fill((255, 255, 255))
+
+        self.ball_radius = 7
+
+        ball_center_coords = (self.rect.centerx, self.rect.centery)
         self.drawn_ball = pygame.draw.circle(
-            self.image, self.ball_color, ball_center_coords, ball_radius
+            self.image,
+            self.ball_color,
+            ball_center_coords,
+            self.ball_radius,
         )
 
-        self.speed = np.array([Ball.x_default_speed, Ball.y_default_speed])
+        self.speed = np.array([5, 1])
+        self.first_serve()
 
+    # Macht den ersten Aufschlag in eine zufällige Richtung
     def first_serve(self):
-        self.speed = np.array([Ball.x_default_speed, Ball.y_default_speed])
+        self.speed = np.array([5, 1])
 
         direction = np.array([np.random.choice([-1, 1]), np.random.normal(scale=4.5)])
 
@@ -52,17 +61,38 @@ class Ball(pygame.sprite.Sprite):
 
 class Matchfield:
     def __init__(self, main_window, ball_count=1, hintergrundfarbe=(255, 255, 0)):
-        self.hauptfenster = main_window
+        self.main_window = main_window
         self.hintergrundfarbe = hintergrundfarbe
 
-        # List comprehension
         self.balls = [Ball() for _ in range(0, ball_count)]
+
+        self._redraw_field()
 
         self.game_object_sprites = pygame.sprite.Group()
         self.game_object_sprites.add(self.balls)
 
-    def _redraw_main_window(self):
-        self.hauptfenster.fill(self.hintergrundfarbe)
+    def move_ball(self, ball):
+        right_wall_collision = self.main_window.get_rect().right < ball.rect.right
+        left_wall_collision = self.main_window.get_rect().left > ball.rect.left
+
+        top_wall_collision = self.main_window.get_rect().top > ball.rect.top
+        bottom_wall_collision = self.main_window.get_rect().bottom < ball.rect.bottom
+
+        top_bot_wall_collision = top_wall_collision or bottom_wall_collision
+
+        if right_wall_collision:
+            self._reset_game()
+
+        elif left_wall_collision:
+            self._reset_game()
+
+        elif top_bot_wall_collision:
+            ball.speed *= np.array([1, -1])
+
+        ball.move()
+
+    def _reset_game(self):
+        self._position_ball()
 
     def _position_ball(self):
         for ball in self.balls:
@@ -70,11 +100,11 @@ class Matchfield:
             ball.rect.centery = self.main_window.get_rect().centery
             ball.first_serve()
 
-    def move_ball(self, ball):
-        right_wall_collision
+    def _redraw_field(self):
+        self.main_window.fill(self.hintergrundfarbe)
 
     def run_match(self):
-        self._redraw_main_window()
+        self._redraw_field()
 
         self.game_object_sprites.draw(self.main_window)
 
@@ -84,8 +114,10 @@ class Matchfield:
 def main():
     pygame.init()
 
-    app = Application(WINDOW_HEIGHT, WINDOW_WIDTH)
-    spielfeld = Matchfield(app.main_window)
+    app = Application(WINDOW_WIDTH, WINDOW_HEIGHT)
+    matchfield = Matchfield(app.main_window)
+
+    app.isRunning = True
 
     while app.isRunning:
         app.clock.tick(60)
@@ -94,7 +126,7 @@ def main():
             if event.type == pygame.QUIT:
                 app.isRunning = False
 
-        spielfeld.run_match()
+        matchfield.run_match()
 
 
 if __name__ == "__main__":

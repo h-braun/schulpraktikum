@@ -56,18 +56,27 @@ class Matchfield:
         self.hintergrundfarbe = hintergrundfarbe
 
         # List comprehension
-        self.balls = [
-            Ball()
-            for _ in range(
-                0,
-            )
-        ]
+        self.balls = [Ball() for _ in range(0, ball_count)]
+
+        self.game_object_sprites = pygame.sprite.Group()
+        self.game_object_sprites.add(self.balls)
 
     def _redraw_main_window(self):
         self.hauptfenster.fill(self.hintergrundfarbe)
 
+    def _position_ball(self):
+        for ball in self.balls:
+            ball.rect.centerx = self.main_window.get_rect().centerx
+            ball.rect.centery = self.main_window.get_rect().centery
+            ball.first_serve()
+
+    def move_ball(self, ball):
+        right_wall_collision
+
     def run_match(self):
         self._redraw_main_window()
+
+        self.game_object_sprites.draw(self.main_window)
 
         pygame.display.flip()
 

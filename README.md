@@ -26,6 +26,3 @@ Anschließend müssen alle Abhängigkeiten (dependencies) aus der  `requirements
 ```
 pip install -r requirements.txt
 ```
-
-Skizze:
-https://docs.google.com/presentation/d/1tU_qScvGnyEERLrD6Z0X-YCYnflQOo3yPUPEZRteLug/edit?usp=sharing
